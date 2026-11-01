@@ -3,21 +3,48 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>전체 화면 페이지</title>
+    <title>rite jesa</title>
     <style>
-        /* 화면의 스크롤바를 완전히 제거하고 여백을 없앱니다 */
+        /* 페이지가 열릴 때 기본 스크롤바를 없앱니다 */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden; 
-            background-color: #000;
+            background-color: #111;
             color: #fff;
+            font-family: sans-serif;
+        }
+
+        /* 중앙 정렬을 위한 컨테이너 */
+        .container {
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: sans-serif;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 전체화면 진입 버튼 스타일 */
+        #fullscreen-btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 전체화면 상태일 때 버튼을 숨깁니다 */
+        :fullscreen #fullscreen-btn {
+            display: none;
+        }
+        /* 구형 브라우저(Safari 등) 호환성을 위한 접두사 */
+        :-webkit-full-screen #fullscreen-btn {
+            display: none;
         }
         .bg-container {
           width: 100vw;  /* 화면 너비의 100% */
@@ -32,33 +59,45 @@
 </head>
 <body>
 
-    <div style="text-align: center;">
     <!-- 이미지를 출력하는 기본 코드 -->
-        <div class="bg-container">
-            <center><img src="ritejesa.png" alt="rite jesa"></center>
-            <button onclick="openFullscreen();" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
-                전체 화면으로 보기
-            </button>
-        </div>
+    <div class="bg-container">
+        <center><img src="ritejesa.png" alt="rite jesa"></center>
+    </div>
+
+    <!-- 화면 아무 곳이나 클릭해도 전체화면이 되도록 body에 이벤트를 걸거나, 버튼을 이용합니다 -->
+    <div class="container" id="content-area">
+        <button id="fullscreen-btn">클릭하여 전체 화면으로 보기</button>
     </div>
 
     <script>
-        // 모든 바가 없는 전체 화면 페이지
-        // 브라우저 보안으로 인해 처음 열릴 때는 버튼 클릭이나 사용자 반응이 필요합니다.
-        // 전체 화면을 요청하는 함수
-        function openFullscreen() {
-            var elem = document.documentElement; // 페이지 전체 선택
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { /* IE11 */
-                elem.msRequestFullscreen();
+        const targetElement = document.documentElement; // 문서 전체(html)를 전체화면으로 지정
+        const btn = document.getElementById('fullscreen-btn');
+        const contentArea = document.getElementById('content-area');
+
+        // 전체화면 요청 함수
+        function activateFullscreen() {
+            if (targetElement.requestFullscreen) {
+                targetElement.requestFullscreen();
+            } else if (targetElement.webkitRequestFullscreen) { /* Safari */
+                targetElement.webkitRequestFullscreen();
+            } else if (targetElement.msRequestFullscreen) { /* IE11 */
+                targetElement.msRequestFullscreen();
             }
         }
 
-        // 사용자가 페이지를 클릭하기만 해도 자동으로 전체 화면이 되도록 하려면 아래 주석을 해제하세요.
-        // document.addEventListener("click", openFullscreen);
+        // 1. 버튼을 눌렀을 때 전체화면 작동
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // body 클릭 이벤트와 겹치지 않도록 방지
+            activateFullscreen();
+        });
+
+        // 2. 화면 빈 곳을 클릭했을 때도 전체화면 작동
+        contentArea.addEventListener('click', () => {
+            // 이미 전체화면 상태가 아닐 때만 실행
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                activateFullscreen();
+            }
+        });
     </script>
 
 </body>
