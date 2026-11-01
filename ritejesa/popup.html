@@ -19,19 +19,33 @@
             align-items: center;
             font-family: sans-serif;
         }
+        .bg-container {
+          width: 100vw;  /* 화면 너비의 100% */
+          height: 100vh; /* 화면 높이의 100% */
+          overflow: hidden;
+        }
+        .bg-container img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover; /* 이미지가 찌그러지지 않게 비율을 유지하며 꽉 채움 */
     </style>
 </head>
 <body>
 
     <div style="text-align: center;">
-        <h1>모든 바가 없는 전체 화면 페이지</h1>
-        <p>브라우저 보안으로 인해 처음 열릴 때는 버튼 클릭이나 사용자 반응이 필요합니다.</p>
-        <button onclick="openFullscreen();" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
-            전체 화면으로 보기
-        </button>
+    <!-- 이미지를 출력하는 기본 코드 -->
+        <div class="bg-container">
+            <center></center><img src="ritejesa.png" alt="rite jesa"></center>
+
+            <button onclick="openFullscreen();" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
+                전체 화면으로 보기
+            </button>
+        </div>
     </div>
 
     <script>
+        // 모든 바가 없는 전체 화면 페이지
+        // 브라우저 보안으로 인해 처음 열릴 때는 버튼 클릭이나 사용자 반응이 필요합니다.
         // 전체 화면을 요청하는 함수
         function openFullscreen() {
             var elem = document.documentElement; // 페이지 전체 선택
@@ -45,7 +59,7 @@
         }
 
         // 사용자가 페이지를 클릭하기만 해도 자동으로 전체 화면이 되도록 하려면 아래 주석을 해제하세요.
-         document.addEventListener("click", openFullscreen);
+        // document.addEventListener("click", openFullscreen);
     </script>
 
 </body>
