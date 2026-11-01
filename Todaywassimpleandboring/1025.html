@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>10/25</title>
     <style>
+        /* 처음에는 페이지 내용을 보이지 않게 숨깁니다 */
+        #content {
+            display: none;
+        }
         body {
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             line-height: 1.6;
@@ -62,7 +67,7 @@
     </style>
 </head>
 <body>
-
+  <div id="content">
     <div class="intro-box">
         <p><strong>October 25th</strong> is <strong>'Dokdo Day'</strong>, a day that commemorates South Korea’s precious territorial sovereignty.
            It was established to mark the historic date of October 25, 1900,
@@ -202,8 +207,7 @@
                 UN에서 축출되고 그 자리를 중화인민공화국(중국)이 대체하면서, 현대 양안 관계의 외교적 고립과 갈등이 심화된 날입니다.</li>
         </ul>
     </div>
-
-
+  </div>
 
   <script>
     // 페이지가 로드될 때 실행
@@ -288,7 +292,5 @@
       document.getElementById('visit-message').innerText = `${visitCount}`;
   </script>
 
-
 </body>
 </html>
-
