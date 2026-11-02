@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -20,24 +19,38 @@
             font-family: sans-serif;
         }
         .bg-container {
-          width: 100vw;  /* 화면 너비의 100% */
-          height: 100vh; /* 화면 높이의 100% */
-          overflow: hidden;
+            width: 100vw;  /* 화면 너비의 100% */
+            height: 100vh; /* 화면 높이의 100% */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .bg-container img {
-          width: 80%;
-          height: 80%;
-          object-fit: cover; /* 이미지가 찌그러지지 않게 비율을 유지하며 꽉 채움 */
+            width: 80%;
+            height: 80%;
+            object-fit: cover; /* 이미지가 찌그러지지 않게 비율을 유지하며 채움 */
+            transition: width 0.3s, height 0.3s; /* 크기 변경 시 부드러운 효과 */
+        }
+
+        /* [요구사항 2] 전체 화면일 때 이미지 크기를 100%로 변경 */
+        :fullscreen .bg-container img,
+        :-webkit-full-screen .bg-container img,
+        :-ms-fullscreen .bg-container img {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
 
     <div style="text-align: center;">
-        <!-- 이미지를 출력하는 기본 코드 -->
         <div class="bg-container">
-            <center><img src="ritejesa.png" alt="rite jesa"></center>
-            <button onclick="openFullscreen();" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
-                전체 화면으로 보기
+            <img src="ritejesa.png" alt="rite jesa">
+            <!-- [요구사항 1] ID 추가 (JS 제어용) -->
+            <button id="fullscreen-btn" onclick="openFullscreen();" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-top: 20px;">
+                Full Screen View
             </button>
         </div>
     </div>
@@ -55,8 +68,23 @@
             }
         }
 
-        // 사용자가 페이지를 클릭하기만 해도 자동으로 전체 화면이 되도록 하려면 아래 주석을 해제하세요.
-        // document.addEventListener("click", openFullscreen);
+        // [요구사항 1] 전체 화면 상태 변화 감지 및 버튼 숨김/보임 처리
+        function handleFullscreenChange() {
+            var btn = document.getElementById("fullscreen-btn");
+            // 현재 전체화면인 요소가 있는지 확인
+            var isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+            
+            if (isFullscreen) {
+                btn.style.display = "none";  /* 전체 화면일 때 숨김 */
+            } else {
+                btn.style.display = "block"; /* 일반 화면일 때 보임 */
+            }
+        }
+
+        // 브라우저별 전체화면 이벤트 리스너 등록
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+        document.addEventListener("msfullscreenchange", handleFullscreenChange);
     </script>
 
 </body>
