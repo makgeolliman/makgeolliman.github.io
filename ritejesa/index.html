@@ -248,9 +248,26 @@
                 elem.msRequestFullscreen();
             }
         }
+        ///////////////////////////////////////////////////////////
 
 
-
+        // 3. 전체 화면에서 아무 데나 더블 클릭했을 때 일반 화면으로 돌아가는 이벤트 리스너
+        document.addEventListener('dblclick', function() {
+            // 현재 문서가 전체 화면 상태인지 확인
+            const isFullscreen = document.fullscreenElement || 
+                                 document.webkitFullscreenElement || 
+                                 document.msFullscreenElement;
+            // 전체 화면 상태일 때만 실행
+            if (isFullscreen) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* 사파리(Safari) 지원 */
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE11 지원 */
+                    document.msExitFullscreen();
+                }
+            }
+        });
 
     </script>
 </body>
