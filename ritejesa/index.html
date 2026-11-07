@@ -70,8 +70,9 @@
             /* 좌, 우, 바닥 벽의 깊이(30vw)만큼 뒤로 밀어 배치 */
             transform: translateZ(-30vw);
                                               // vw는 Viewport Width(뷰포트 너비)의 약자로, 현재 웹 브라우저 창 너비를 기준으로 하는 반응형 크기 단위입니다.
-                                              // • 1vw = 브라우저 창 너비의 1%
-                                              // • 100vw = 브라우저 창 전체 너비 (100%)
+
+                                               // • 1vw = 브라우저 창 너비의 1%
+ • 100vw = 브라우저 창 전체 너비 (100%)
         }
 
         /* 좌측 벽 (폭은 정면 폭의 30% = 30vw) */
@@ -117,26 +118,56 @@
         }
 
 
+
+        /* 이미지를 감싸는 컨테이너 (좌표의 기준점) */
         .image-container {
-          width: 100%;
-          height: 100%;
-          padding: 0;
-          overflow: hidden; /* 이미지가 영역을 벗어날 경우 잘라냄 */
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            overflow: hidden; /* 이미지가 영역을 벗어날 경우 잘라냄 */
+            position: relative;
+            display: inline-block;
         }
 
-        .image-container img {
-          width: 100%;
-          height: 100%;
-          object-fit: flex; /* 비율을 유지하며 부모 영역을 꽉 채움 (이미지 일부가 잘릴 수 있음) */
-          display: block; /* img 태그 하단에 생기는 기본 여백 제거 */
-          margin: 0;
-          padding: 0;
-          border: 0;
+        /* 배경 이미지 스타일 */
+        .background-image {
+            width: 100%;
+            height: 100%;
+            object-fit: flex; /* 비율을 유지하며 부모 영역을 꽉 채움 (이미지 일부가 잘릴 수 있음) */
+            display: block;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            border: 0;
         }
+
+        /* X: 1%, Y: 1% 위치에 글자를 배치하는 스타일 */
+        .fullscreen-button {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+            color: white;             /* 글자 색상 (배경에 따라 변경 가능) */
+            background-color: rgba(0, 0, 0, 0.6); /* 글자가 잘 보이도록 반투명 배경 추가 */
+            padding: 5px 10px;
+            font-size: 14px;
+            font-family: sans-serif;
+            cursor: pointer;          /* 마우스 호버 시 포인터 모양 */
+            text-decoration: none;    /* a 태그일 경우 밑줄 제거 */
+            border-radius: 4px;
+            user-select: none;        /* 더블 클릭 시 텍스트 블록 지정 방지 */
+        }
+
+        .fullscreen-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+
+
+
     </style>
 </head>
 <body>
-    <!-- 여기서 입체 효과를 내지만 주석으로 해본다
+  <!-- 여기서 입체 효과를 내지만 주석으로 해본다
     <div id="viewport">
         <div id="room">
             <div class="wall front"></div>
@@ -146,9 +177,17 @@
             <div class="wall bottom"></div>
         </div>
     </div>
-    -->
-    <div class="image-container"><img src="ritejesa.png" alt="">
-</div>
+  -->
+
+    <!-- 그림이 있는 화면 컨테이너 -->
+    <div class="image-container" id="fullscreenArea">
+        <!-- 원하는 이미지 주소(src)를 넣으세요 -->
+        <img src="ritejesa.png" alt="" class="background-image">
+        
+        <!-- 요청하신 span 태그와 onclick 이벤트 -->
+        <span class="fullscreen-button" onclick="openFullscreen();">Full Screen</span>
+    </div>
+
 
 
     <script>
@@ -159,12 +198,9 @@
         let currentZ = 0;       // 현재 카메라(방)의 Z축 위치
         const scrollSpeed = 0.5; // 스크롤 감도
 
-        /* 
-           [줌 제한 범위 설정 계산]
-           - 최대 줌아웃 (minZ): 0 (방 초입, 좌우 벽면이 화면 시작점에 걸치는 지점)
-           - 최대 줌인 (maxZ): 정면 벽의 깊이인 30vw 만큼만 들어갈 수 있게 제한하여 
-                              정면 벽을 뚫고 지나가거나 방을 벗어나지 않도록 방지합니다.
-        */
+        //   [줌 제한 범위 설정 계산]
+        //   - 최대 줌아웃 (minZ): 0 (방 초입, 좌우 벽면이 화면 시작점에 걸치는 지점)
+        //   - 최대 줌인 (maxZ): 정면 벽의 깊이인 30vw 만큼만 들어갈 수 있게 제한하여 정면 벽을 뚫고 지나가거나 방을 벗어나지 않도록 방지합니다.
         function getLimits() {
             // 정면 폭의 30%에 해당하는 픽셀 값 계산
             const maxWallDepth = window.innerWidth * 0.3; 
