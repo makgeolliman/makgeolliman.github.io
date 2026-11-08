@@ -545,7 +545,7 @@
     
     const DOUBLE_CLICK_DELAY = 300;    // 더블클릭 판정 시간 (ms)
 
-        textBox.addEventListener('mousedown', function(e) {
+        textBox.addEventListener('pointerdown', function(e) {
             if (e.button === 0) {                 // e.button === 0 는 왼쪽
                 isRightDragging = true;
                 startX = e.clientX;
@@ -598,7 +598,7 @@
             }
         });
 
-        window.addEventListener('mousemove', function(e) {
+        window.addEventListener('pointermove', function(e) {
             if (!isRightDragging) return;
 
             // 이동 거리 계산
@@ -621,7 +621,7 @@
             textBox.style.top = `${newTopPercent}%`;
         });
 
-        window.addEventListener('mouseup', function(e) {
+        window.addEventListener('pointerup', function(e) {
             if (e.button === 0) {
                 isRightDragging = false;
             }
