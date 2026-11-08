@@ -151,7 +151,7 @@
             color: white;             /* 글자 색상 (배경에 따라 변경 가능) */
             background-color: rgba(0, 0, 0, 0.6); /* 글자가 잘 보이도록 반투명 배경 추가 */
             padding: 5px 10px;
-            font-size: 14px;
+            font-size: 50%;           // 12px;
             font-family: sans-serif;
             cursor: pointer;          /* 마우스 호버 시 포인터 모양 */
             text-decoration: none;    /* a 태그일 경우 밑줄 제거 */
@@ -170,7 +170,7 @@
             color: white;             /* 글자 색상 (배경에 따라 변경 가능) */
             background-color: rgba(0, 0, 0, 0.6); /* 글자가 잘 보이도록 반투명 배경 추가 */
             padding: 5px 10px;
-            font-size: 14px;
+            font-size: 50%;            // 12px;
             font-family: sans-serif;
             cursor: pointer;          /* 마우스 호버 시 포인터 모양 */
             text-decoration: none;    /* a 태그일 경우 밑줄 제거 */
@@ -202,7 +202,7 @@
             height: 25%;
             
             /* 폰트 및 정렬 스타일 */
-            font-size: 12px;
+            font-size: 50%;             // 12px;
             font-family: sans-serif;
             text-align: center;
             
@@ -254,7 +254,7 @@
         <span id="fullscreen-btn" class="fullscreen-button" onclick="openFullscreen();">Full Screen</span>
 
         <!-- 옵션 도움말 -->
-        <span id="helper-btn" class="helper-button">option <br>(1) jibang: Right mouse- drag<br>(2) jibang: Right mouse Double Click- del</span>
+        <span id="helper-btn" class="helper-button">option <br>(1) screen double click (2) jibang drag<br>(3) jibang Double Click</span>
 
         <!-- 연기가 그려질 투명 캔버스 -->
         <canvas id="smokeCanvas" class="smoke-canvas"></canvas>
@@ -546,8 +546,7 @@
     const DOUBLE_CLICK_DELAY = 300;    // 더블클릭 판정 시간 (ms)
 
         textBox.addEventListener('mousedown', function(e) {
-            // 마우스 오른쪽 버튼 클릭 시 (button 번호 2가 우클릭)
-            if (e.button === 2) {                  // e.button === 2 는 오른쪽 마우스 버튼을 의미함 (0: 왼쪽, 1: 휠, 2: 오른쪽) [0.1.5]
+            if (e.button === 0) {                 // e.button === 0 는 왼쪽
                 isRightDragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
@@ -559,7 +558,12 @@
                 // 컨테이너 기준 현재 left, top (px)
                 startLeft = boxRect.left - containerRect.left;
                 startTop = boxRect.top - containerRect.top;
-                
+
+            }
+
+            // 마우스 오른쪽 버튼 클릭 시 (button 번호 2가 우클릭)
+            if (e.button === 2) {                  // e.button === 2 는 오른쪽 마우스 버튼을 의미함 (0: 왼쪽, 1: 휠, 2: 오른쪽) [0.1.5]
+
                 // 드래그 중 텍스트 선택 방지
                 e.preventDefault();
 
@@ -591,7 +595,6 @@
                     }, 50);
                 }
                 lastRightClickTime = currentTime;
-
             }
         });
 
@@ -619,6 +622,12 @@
         });
 
         window.addEventListener('mouseup', function(e) {
+            if (e.button === 0) {
+                isRightDragging = false;
+            }
+            if (e.button === 1) {
+                isRightDragging = false;
+            }
             if (e.button === 2) {
                 isRightDragging = false;
             }
@@ -642,7 +651,7 @@
         localStorage.setItem('visitCount', visitCount);
 
         // 화면에 방문 횟수를 출력합니다.
-        document.getElementById('helper-btn').innerText = `option\n(1) jibang: Right mouse- drag\n(2) jibang: Right mouse Double Click- del\n${visitCount}`;
+        document.getElementById('helper-btn').innerText = `option\n(1) screen doubleclick\n(2) jibang drag\n(3) jibang DoubleClick\n${visitCount}`;
         ///////////////////////////////////////////////////////////
 
 
