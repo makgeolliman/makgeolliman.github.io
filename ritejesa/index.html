@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RiteJesa</title>
+    <meta name="description" content="RITE 한국 제사">
+    <meta name="keywords" content="RITE 한국의 제사">
+    <title>Rite Jesa (제사)</title>
     <style>
         /* 화면 전체를 채우고 스크롤을 방지 */
         * {
@@ -161,8 +163,72 @@
             background-color: rgba(0, 0, 0, 0.8);
         }
 
+        .helper-button {
+            position: absolute;
+            left: 1%;
+            top: 5%;
+            color: white;             /* 글자 색상 (배경에 따라 변경 가능) */
+            background-color: rgba(0, 0, 0, 0.6); /* 글자가 잘 보이도록 반투명 배경 추가 */
+            padding: 5px 10px;
+            font-size: 14px;
+            font-family: sans-serif;
+            cursor: pointer;          /* 마우스 호버 시 포인터 모양 */
+            text-decoration: none;    /* a 태그일 경우 밑줄 제거 */
+            border-radius: 4px;
+            user-select: none;        /* 더블 클릭 시 텍스트 블록 지정 방지 */
+        }
 
+        .helper-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
 
+        /* 이미지 위에 완벽히 겹쳐질 캔버스 */
+        .smoke-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 마우스 클릭 등이 이미지로 통과되도록 설정 */
+        }
+
+        /* 텍스트 입력 박스 스타일 */
+        .input-box {
+            position: absolute;
+            /* 초기 위치 및 크기 */
+            left: 48.5%;
+            top: 32%;
+            width: 4%;
+            height: 25%;
+            
+            /* 폰트 및 정렬 스타일 */
+            font-size: 12px;
+            font-family: sans-serif;
+            text-align: center;
+            
+            /* 세로 쓰기 및 행간(줄바꿈 시 간격) 설정 */
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            letter-spacing: 2px; /* 세로 쓰기에서는 글자 간격이 실제 행간 역할을 함 */
+            
+            /* 플렉스박스를 이용한 박스 중앙 정렬 */
+            display: flex;
+            justify-content: center; /* 세로 쓰기 기준 수직 중앙 */
+            align-content: center;  /* 세로 쓰기 기준 수평 중앙 */
+            flex-wrap: wrap;        /* 공백 시 다음 줄로 넘어가도록 설정 */
+            
+            /* 기타 스타일 */
+            border: 1px solid #999;
+            background-color: rgba(203, 182, 167, 0.85);
+            box-sizing: border-box;
+            outline: none;
+            resize: none;
+            overflow: hidden;
+            white-space: pre-wrap;
+            word-break: break-all;
+            cursor: move;
+            transition: clip-path 0.1s linear; /* 타들어가는 애니메이션 효과용 */
+        }
 
     </style>
 </head>
@@ -182,10 +248,19 @@
     <!-- 그림이 있는 화면 컨테이너 -->
     <div class="image-container" id="fullscreenArea">
         <!-- 원하는 이미지 주소(src)를 넣으세요 -->
-        <img src="ritejesa.png" alt="" class="background-image">
+        <img id="fullscreen-img" class="background-image" src="ritejesa.png" alt="">
         
         <!-- 요청하신 span 태그와 onclick 이벤트 -->
-        <span class="fullscreen-button" onclick="openFullscreen();">Full Screen</span>
+        <span id="fullscreen-btn" class="fullscreen-button" onclick="openFullscreen();">Full Screen</span>
+
+        <!-- 옵션 도움말 -->
+        <span id="helper-btn" class="helper-button">option <br>(1) jibang: Right mouse- drag<br>(2) jibang: Right mouse Double Click- del</span>
+
+        <!-- 연기가 그려질 투명 캔버스 -->
+        <canvas id="smokeCanvas" class="smoke-canvas"></canvas>
+
+        <!-- 문자 입력을 위한 contenteditable element (textarea는 flex 정렬 및 세로 세부 제어가 까다로워 div 사용) -->
+        <div class="input-box" id="textBox" contenteditable="true" placeholder="입력..."></div>
     </div>
 
 
@@ -237,7 +312,7 @@
         ///////////////////////////////////////////////////////////
 
 
-        //////////////////////   2. full screen   /////////////////
+        ///////////////   2. full screen 으로 바꾸는 코드   ////////////
         function openFullscreen() {
             var elem = document.documentElement; // 페이지 전체 선택
             if (elem.requestFullscreen) {
@@ -257,6 +332,7 @@
             const isFullscreen = document.fullscreenElement || 
                                  document.webkitFullscreenElement || 
                                  document.msFullscreenElement;
+
             // 전체 화면 상태일 때만 실행
             if (isFullscreen) {
                 if (document.exitFullscreen) {
@@ -268,6 +344,307 @@
                 }
             }
         });
+        ///////////////////////////////////////////////////////////
+
+
+        ///////   4. 전체 화면 상태 변화 감지 및 버튼 숨김/보임 처리   ////////
+        function handleFullscreenChange() {
+            var btn = document.getElementById("fullscreen-btn");
+            var helpbtn = document.getElementById("helper-btn");
+
+            // 현재 전체화면인 요소가 있는지 확인
+            var isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+            
+            if (isFullscreen) {
+                btn.style.display = "none";     /* 전체 화면일 때 숨김 */
+                helpbtn.style.display = "none"; /* 전체 화면일 때 숨김 */
+            } else {
+                btn.style.display = "block";    /* 일반 화면일 때 보임 */
+                help.style.display = "block";   /* 일반 화면일 때 보임 */
+            }
+        }
+
+        // 브라우저별 전체화면 이벤트 리스너 등록
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+        document.addEventListener("msfullscreenchange", handleFullscreenChange);
+        ///////////////////////////////////////////////////////////
+
+
+        ////////////////////   5. 연기 피어 오름   ////////////////////
+        const canvas = document.getElementById('smokeCanvas');
+        const ctx = canvas.getContext('2d');
+        const img = document.getElementById('fullscreen-img');
+
+        // 연기가 피어오를 향 3개의 상대적 위치 (가로 0~1, 세로 0~1 비율)
+        // 이미지 크기가 바뀌어도 일정한 위치에서 피어오르도록 비율로 설정했습니다.
+        const incensePositions = [
+            { x: 0.48, y: 0.65 }, // 1번째 향 위치
+            { x: 0.50, y: 0.65 }, // 2번째 향 위치
+            { x: 0.52, y: 0.65 }  // 3번째 향 위치
+        ];
+
+        let particles = [];
+
+        // 캔버스 크기를 이미지 크기와 동기화
+        function resizeCanvas() {
+            canvas.width = img.clientWidth;
+            canvas.height = img.clientHeight;
+        }
+
+        // 이미지 로드가 완료되었거나 창 크기가 바뀔 때 캔버스 크기 재조정
+        img.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+        if (img.complete) resizeCanvas();
+
+        // 연기 입자(파티클) 클래스
+        class SmokeParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 0.4; // 좌우 퍼짐 정도 (작게 설정)
+                this.vy = -(Math.random() * 0.6 + 0.4); // 위로 올라가는 속도
+                this.age = 0;
+                this.maxAge = Math.random() * 100 + 120; // 수명
+                this.baseSize = Math.random() * 2 + 2; // 시작 크기 (작은 연기)
+                this.opacity = Math.random() * 0.2 + 0.1; // 시작 투명도 (은은하게)
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.age++;
+                
+                // 시간이 지날수록 바람에 흔들리는 효과 (부드러운 좌우 흔들림)
+                this.vx += (Math.random() - 0.5) * 0.1;
+            }
+
+            draw() {
+                ctx.save();
+                
+                // 수명에 따라 서서히 커지면서 흐려짐
+                const progress = this.age / this.maxAge;
+                const currentSize = this.baseSize * (1 + progress * 4); 
+                const currentOpacity = this.opacity * (1 - progress);
+
+                // 부드러운 연기 효과를 위해 그라디언트 적용
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentSize);
+                gradient.addColorStop(0, `rgba(220, 220, 220, ${currentOpacity})`);
+                gradient.addColorStop(0.5, `rgba(230, 230, 230, ${currentOpacity * 0.5})`);
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, currentSize, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        // 애니메이션 루프
+        function animate() {
+            // 잔상이 남지 않도록 깨끗이 지우기
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 매 프레임마다 3개의 위치에서 확률적으로 새로운 연기 입자 생성
+            if (canvas.width > 0 && canvas.height > 0) {
+                incensePositions.forEach(pos => {
+                    // 실제 픽셀 좌표 계산
+                    const actualX = pos.x * canvas.width;
+                    const actualY = pos.y * canvas.height;
+                    
+                    // 연기가 너무 뭉치지 않도록 적절한 확률로 생성
+                    if (Math.random() < 0.15) {
+                        particles.push(new SmokeParticle(actualX, actualY));
+                    }
+                });
+            }
+
+            // 입자 업데이트 및 그리기
+            particles = particles.filter(p => {
+                p.update();
+                p.draw();
+                return p.age < p.maxAge; // 수명이 남은 입자만 유지
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // 애니메이션 시작
+        animate();
+        ///////////////////////////////////////////////////////////
+
+
+        ////////////////////   6. 지방 텍스트 박스 효과  ////////////////
+        const textBox = document.getElementById('textBox');
+        const container = document.getElementById('fullscreenArea');
+
+        textBox.addEventListener('keydown', function(e) {
+            // 엔터 키가 눌렸을 때 (한글 입력 시 중복 이벤트 방지 포함)
+            if (e.key === 'Enter' && !e.isComposing) {
+                // 브라우저의 기본 줄바꿈(밑으로 내려가는 줄바꿈)을 막습니다
+                e.preventDefault();
+
+                // 현재 커서(Selection) 위치를 가져옵니다
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+                
+                const range = selection.getRangeAt(0);
+                
+                /* 
+                   세로쓰기(vertical-rl) 모드에서는 <br> 태그가 삽입되면 
+                   자연스럽게 아래가 아닌 '다음 왼쪽 열'의 시작점으로 커서가 이동합니다.
+                */
+                const br = document.createElement('br');
+                
+                // 현재 커서 자리에 <br> 태그 삽입
+                range.deleteContents();
+                range.insertNode(br);
+
+                // 커서의 위치를 방금 삽입한 <br> 태그 바로 뒤로 이동시킵니다
+                range.setStartAfter(br);
+                range.setEndAfter(br);
+                
+                selection.removeAllRanges();
+                selection.addRange(range);
+                
+                // 최신 내용 반영을 위해 스크롤을 이동시킵니다
+                editor.scrollLeft = editor.scrollWidth;
+            }
+        });
+
+        // 최대 26자 제한 및 공백 처리
+        textBox.addEventListener('input', function() {
+            // 브라우저가 자동 생성하는 태그(<div>, <br>) 등을 제외한 순수 텍스트 추출
+            let text = textBox.innerText;
+            
+            // 최대 26자 제한
+            if (text.length > 26) {
+                textBox.innerText = text.substring(0, 26);
+                // 커서를 맨 뒤로 이동
+                const range = document.createRange();
+                const sel = window.getSelection();
+                range.selectNodeContents(textBox);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        });
+
+
+        // 마우스 오른쪽 버튼 드래그 이동 (우클릭 메뉴 방지 포함)
+        let isRightDragging = false;
+        let startX, startY;
+        let startLeft, startTop;
+
+        // 컨테이너 안에서 우클릭 메뉴가 뜨는 것을 방지
+        container.addEventListener('contextmenu', e => e.preventDefault());
+
+        let lastRightClickTime = 0;
+    
+    const DOUBLE_CLICK_DELAY = 300;    // 더블클릭 판정 시간 (ms)
+
+        textBox.addEventListener('mousedown', function(e) {
+            // 마우스 오른쪽 버튼 클릭 시 (button 번호 2가 우클릭)
+            if (e.button === 2) {                  // e.button === 2 는 오른쪽 마우스 버튼을 의미함 (0: 왼쪽, 1: 휠, 2: 오른쪽) [0.1.5]
+                isRightDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                // 현재 %, px 단위를 계산하기 위해 컨테이너 크기 기준 위치 획득
+                const containerRect = container.getBoundingClientRect();
+                const boxRect = textBox.getBoundingClientRect();
+                
+                // 컨테이너 기준 현재 left, top (px)
+                startLeft = boxRect.left - containerRect.left;
+                startTop = boxRect.top - containerRect.top;
+                
+                // 드래그 중 텍스트 선택 방지
+                e.preventDefault();
+
+                // ★★★ 오른쪽 마우스 더블 클릭 시 아래에서부터 5px씩 타들어 가는 효과
+                const currentTime = new Date().getTime();
+                const timeDiff = currentTime - lastRightClickTime;
+                if (timeDiff < DOUBLE_CLICK_DELAY && timeDiff > 0) {
+                    // 입력을 막고 포커스 해제
+                    textBox.removeAttribute('contenteditable');
+                    textBox.blur();
+
+                    const boxHeight = textBox.offsetHeight;
+                    let currentBurn = boxHeight;
+
+                    // 5px씩 깎아내려가는 타이머 (0.05초 간격)
+                    const burnInterval = setInterval(() => {
+                        currentBurn -= 5;
+
+                        if (currentBurn <= 0) {
+                            clearInterval(burnInterval);
+                            textBox.remove(); // 다 타면 엘리먼트 삭제
+                        } else {
+                            // CSS clip-path를 이용해 아래쪽부터 잘라내어 타들어 가는 효과 연출
+                            let percent = (currentBurn / boxHeight) * 100;
+                            textBox.style.clipPath = `inset(0% 0% ${100 - percent}% 0%)`;
+                            // 불타는 느낌을 주기 위해 배경색을 점차 붉게 변경
+                            textBox.style.backgroundColor = `rgba(255, 69, 0, ${percent / 100})`;
+                        }
+                    }, 50);
+                }
+                lastRightClickTime = currentTime;
+
+            }
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (!isRightDragging) return;
+
+            // 이동 거리 계산
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+
+            // 새로운 위치 (px)
+            const newLeftPx = startLeft + deltaX;
+            const newTopPx = startTop + deltaY;
+
+            // 이미지를 벗어나지 않도록 컨테이너 크기 대비 %로 변환
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+
+            const newLeftPercent = (newLeftPx / containerWidth) * 100;
+            const newTopPercent = (newTopPx / containerHeight) * 100;
+
+            // 위치 반영
+            textBox.style.left = `${newLeftPercent}%`;
+            textBox.style.top = `${newTopPercent}%`;
+        });
+
+        window.addEventListener('mouseup', function(e) {
+            if (e.button === 2) {
+                isRightDragging = false;
+            }
+        });
+        ///////////////////////////////////////////////////////////
+
+
+        ///////////////////////   99. 방문 카운트  ///////////////////
+        // localStorage에서 'visitCount' 값을 가져옵니다.
+        let visitCount = localStorage.getItem('visitCount');
+
+        if (visitCount === null) {
+            // 처음 방문한 경우 1로 초기화합니다.
+            visitCount = 1;
+        } else {
+            // 이미 방문한 적이 있다면 기존 값에 1을 더합니다.
+          visitCount = Number(visitCount) + 1;
+        }
+
+        // 증가한 값을 다시 localStorage에 저장합니다.
+        localStorage.setItem('visitCount', visitCount);
+
+        // 화면에 방문 횟수를 출력합니다.
+        document.getElementById('helper-btn').innerText = `option\n(1) jibang: Right mouse- drag\n(2) jibang: Right mouse Double Click- del\n${visitCount}`;
+        ///////////////////////////////////////////////////////////
+
 
     </script>
 </body>
