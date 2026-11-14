@@ -676,11 +676,12 @@
 
 
         ///////////////////////   99. 방문 카운트  ///////////////////
-/*
+
         const countElement = document.getElementById('helper-btn');
         //  document.getElementById('helper-btn').innerText = `option\n(1) screen doubleclick\n(2) jibang drag\n(3) incense DoubleClick\n${visitCount}`;
 
         try {
+/*
             // 1. 현재 폴더의 count.txt 파일 불러오기 (캐시 방지를 위해 시간값 추가)
             const response = await fetch('./count.txt?t=' + new Date().getTime());
 
@@ -701,6 +702,7 @@
 
             // 4. 서버의 기본 숫자 + 내 브라우저 방문 횟수 합산 출력
             countElement.innerText = `option\n(1) screen doubleclick\n(2) jibang drag\n(3) incense DoubleClick\n(serverCount + localAdd).toLocaleString()`;
+*/
         } catch (error) {
             console.error('에러 발생:', error);
             countElement.innerText = '오류';
@@ -709,7 +711,7 @@
 
     // 페이지가 열릴 때 함수 실행
     updateVisitorCount();
-*/
+
     ///////////////////////////////////////////////////////////
 
     </script>
