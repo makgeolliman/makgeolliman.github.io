@@ -1,272 +1,228 @@
-
-
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI JANGGI</title>
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-      body {
-        background-color: #1e1b18;
-        color: #f4ece1;
-        font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        overflow: hidden;
-      }
-      #game-wrapper {
-        width: 100%;
-        max-width: 1280px;
-        aspect-ratio: 4 / 3;
-        position: relative;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-        border: 4px solid #5c3a21;
-        border-radius: 8px;
-        background: #2b2118;
-      }
-      canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-        cursor: pointer;
-      }
-      #ui-overlay {
-        position: absolute;
-        top: 2%;
-        right: 2.5%;
-        width: 26%;
-        height: 96%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        pointer-events: none;
-      }
-      .panel {
-        background: rgba(35, 25, 18, 0.9);
-        border: 2px solid #8c5a32;
-        border-radius: 8px;
-        padding: 14px;
-        pointer-events: auto;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      }
-      h1 {
-        font-size: 1.4vw;
-        text-align: center;
-        color: #e6b87d;
-        border-bottom: 1px solid #6b4423;
-        padding-bottom: 8px;
-        margin-bottom: 10px;
-      }
-      .status-box {
-        font-size: 1.05vw;
-        line-height: 1.6;
-        text-align: center;
-      }
-      .highlight-cho { color: #4ade80; font-weight: bold; }
-      .highlight-han { color: #f87171; font-weight: bold; }
-      .control-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      label { font-size: 0.95vw; color: #d6c5b3; }
-      select, button {
-        width: 100%;
-        padding: 8px 10px;
-        font-size: 0.95vw;
-        border-radius: 5px;
-        border: 1px solid #8c5a32;
-        background: #3d2b1f;
-        color: #f4ece1;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      button:hover { background: #593f2d; }
-      button:disabled { opacity: 0.5; cursor: not-allowed; }
-      #log-box {
-        height: 28%;
-        overflow-y: auto;
-        font-size: 0.85vw;
-        color: #cbbba8;
-        line-height: 1.5;
-      }
-      @media (min-width: 1280px) {
-        h1 { font-size: 19px; }
-        .status-box { font-size: 14px; }
-        label, select, button { font-size: 13px; }
-        #log-box { font-size: 12px; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="game-wrapper">
-      <canvas id="boardCanvas" width="1280" height="960"></canvas>
-  <div id="ui-overlay">
-    <div class="panel">
-      <h1>漢 楚 大 戰 (AI 장기)</h1>
-      <div class="status-box" id="statusText">초(Player)의 차례입니다.</div>
-      <div class="status-box" id="scoreText" style="margin-top:6px; font-size:0.9em; color:#aaa;">점수 - 초: 72.0 | 한: 73.5</div>
+<head>
+<meta charset="UTF-8">
+<title>고수준 AI 장기 (초나라 vs 한나라)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body {
+    background-color: #1e1e1e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    overflow-x: auto;
+  }
+  /* 가로 1280px 고정, 세로 비율 자동 맞춤 */
+  #game-wrapper {
+    width: 1280px;
+    height: 820px;
+    background: #2c241b;
+    border: 4px solid #5c4328;
+    border-radius: 12px;
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+  }
+  /* 왼쪽 장기판 영역 */
+  #board-container {
+    width: 720px;
+    height: 780px;
+    background: #deb887;
+    border-radius: 8px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  canvas {
+    display: block;
+    cursor: pointer;
+  }
+  /* 오른쪽 정보 및 컨트롤 패널 */
+  #side-panel {
+    flex: 1;
+    background: #382e24;
+    border-radius: 8px;
+    padding: 25px;
+    color: #f4ebd9;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 2px solid #5c4328;
+  }
+  .title-box {
+    text-align: center;
+    border-bottom: 2px solid #5c4328;
+    padding-bottom: 15px;
+  }
+  .title-box h1 { font-size: 32px; color: #f0c05a; letter-spacing: 4px; }
+  .title-box p { font-size: 14px; color: #bba88e; margin-top: 5px; }
+  
+  .status-box {
+    background: #261f18;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #4a3825;
+  }
+  .turn-indicator {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+  }
+  .turn-cho { background: #164a28; color: #6ee798; border: 1px solid #2ea055; }
+  .turn-han { background: #5c1919; color: #ff8a8a; border: 1px solid #b83232; }
+  
+  .score-board {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #4a3825;
+  }
+  #message-log {
+    height: 240px;
+    background: #1c1611;
+    border: 1px solid #4a3825;
+    border-radius: 6px;
+    padding: 12px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #d6c7b2;
+  }
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  select, button {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  select {
+    background: #4a3825;
+    color: #f4ebd9;
+    border: 1px solid #75593c;
+  }
+  button {
+    background: #c88a36;
+    color: #1e160d;
+    transition: 0.2s;
+  }
+  button:hover { background: #e09f45; }
+  button:disabled { background: #555; color: #888; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div id="game-wrapper">
+  <div id="board-container">
+    <canvas id="janggiCanvas" width="700" height="770"></canvas>
+  </div>
+  
+  <div id="side-panel">
+    <div class="title-box">
+      <h1>楚 漢 長 棋</h1>
+      <p>가로 1280px 최적화 | 고급 알파-베타 AI 탑재</p>
     </div>
-    <div class="panel control-group">
-      <label for="formationSelect">초(Player) 차림 선택:</label>
+
+    <div class="status-box">
+      <div id="turnDisplay" class="turn-indicator turn-cho">초나라(플레이어) 차례</div>
+      <div id="alertDisplay" style="text-align:center; color:#ffd700; font-weight:bold; height:24px;"></div>
+      <div class="score-board">
+        <span style="color:#6ee798;">초(나): <b id="choScore">72</b>점</span>
+        <span style="color:#ff8a8a;">한(PC): <b id="hanScore">73.5</b>점</span>
+      </div>
+    </div>
+
+    <div id="message-log">
+      <div>[시스템] 대국이 시작되었습니다.</div>
+      <div>[안내] 초나라(녹색)가 먼저 둡니다.</div>
+    </div>
+
+    <div class="controls">
       <select id="formationSelect">
-        <option value="MSSM">마상상마 (왼마 오른상)</option>
-        <option value="SMMS">상마마상 (왼상 오른마)</option>
-        <option value="MSMS">마상마상 (안상 밖마)</option>
-        <option value="SMSM">상마상마 (안마 밖상)</option>
+        <option value="MSMS">초 포진: 마상마상 (기본)</option>
+        <option value="SMSM">초 포진: 상마상마</option>
+        <option value="MSSM">초 포진: 마상상마 (귀마)</option>
+        <option value="SMMS">초 포진: 상마마상 (원앙마)</option>
       </select>
-      <label for="aiLevel">PC AI 난이도 (탐색 깊이):</label>
-      <select id="aiLevel">
-        <option value="3" selected>상급 (3수 앞 예측 - 빠름)</option>
-        <option value="4">최상급 (4수 앞 예측 - 고수)</option>
-      </select>
-      <button id="btnNewGame">새 대국 시작</button>
-      <button id="btnUndo">무르기 (한 수 뒤로)</button>
-      <button id="btnPass">한 수 쉼 (Pass)</button>
-    </div>
-    <div class="panel" id="log-box">
-      <div>대국 기보가 이곳에 기록됩니다.</div>
+      <button id="restartBtn" onclick="initGame()">새 대국 시작 (초기화)</button>
+      <button id="passBtn" onclick="passTurn()">한수 쉼 (통과)</button>
     </div>
   </div>
 </div>
 
 <script>
-// 논리 해상도 1280 x 960 고정
-const CANVAS_W = 1280;
-const CANVAS_H = 960;
+
+const canvas = document.getElementById('janggiCanvas');
+const ctx = canvas.getContext('2d');
+
 const COLS = 9;
 const ROWS = 10;
+const CELL = 72;
+const OFFSET_X = 62;
+const OFFSET_Y = 61;
 
-// 장기판 렌더링 좌표 설정 (좌측 영역에 장기판 배치)
-const BOARD_X = 95;
-const BOARD_Y = 75;
-const CELL_W = 88;
-const CELL_H = 88;
-
-// 진영 및 기물 상수 (양수: 초/Player, 음수: 한/PC AI)
-const CHO = 1;  // 초 (아래쪽, 파랑/초록)
-const HAN = -1; // 한 (위쪽, 빨강)
-
-const EMPTY = 0;
-const KING = 1;    // 궁(楚/漢)
-const CHA = 2;     // 차(車)
-const PO = 3;      // 포(包)
-const MA = 4;      // 마(馬)
-const SANG = 5;   // 상(象)
-const SA = 6;     // 사(士)
-const JOL = 7;    // 졸/병(卒/兵)
-
+// 기물 정의 (대문자: 한나라 PC, 소문자: 초나라 플레이어)
+// K/k: 궁, C/c: 차, P/p: 포, H/h: 마, E/e: 상, A/a: 사, S/s: 졸/병
 const PIECE_NAMES = {
-  [CHO]:  { [KING]: '楚', [CHA]: '車', [PO]: '包', [MA]: '馬', [SANG]: '象', [SA]: '士', [JOL]: '卒' },
-  [HAN]:  { [KING]: '漢', [CHA]: '車', [PO]: '包', [MA]: '馬', [SANG]: '象', [SA]: '士', [JOL]: '兵' }
+  'K': '漢', 'C': '車', 'P': '包', 'H': '馬', 'E': '象', 'A': '士', 'S': '兵',
+  'k': '楚', 'c': '車', 'p': '包', 'h': '馬', 'e': '象', 'a': '士', 's': '卒'
 };
 
-// 기물 기본 점수 (장기 표준 점수 기반 AI 가중치)
+// AI 기물 가치 평가표 (장기 표준 점수 기반 가중치)
 const PIECE_VALUES = {
-  [KING]: 100000,
-  [CHA]:  1300,
-  [PO]:   700,
-  [MA]:   500,
-  [SANG]: 300,
-  [SA]:   300,
-  [JOL]:  200
+  'K': 100000, 'C': 1300, 'P': 700, 'H': 500, 'E': 300, 'A': 300, 'S': 200,
+  'k': -100000, 'c': -1300, 'p': -700, 'h': -500, 'e': -300, 'a': -300, 's': -200
 };
 
 let board = [];
-let turn = CHO;
+let turn = 'cho'; // 'cho' (플레이어) 또는 'han' (PC)
 let selected = null;
 let validMoves = [];
-let lastMove = null;
-let historyStack = [];
-let isGameOver = false;
+let gameOver = false;
 let isAiThinking = false;
+let lastMove = null;
 
-const canvas = document.getElementById('boardCanvas');
-const ctx = canvas.getContext('2d');
-const statusText = document.getElementById('statusText');
-const scoreText = document.getElementById('scoreText');
-const logBox = document.getElementById('log-box');
-
-// 차림별 배치 헬퍼 (마상 조합)
-function getFormationArray(type) {
-  switch (type) {
-    case 'MSSM': return [MA, SANG, SANG, MA];
-    case 'SMMS': return [SANG, MA, MA, SANG];
-    case 'MSMS': return [MA, SANG, MA, SANG];
-    case 'SMSM': return [SANG, MA, SANG, MA];
-    default:     return [MA, SANG, SANG, MA];
-  }
-}
-
-// 보드 초기화
-function initBoard() {
-  board = Array.from({ length: ROWS }, () => Array(COLS).fill(EMPTY));
-  const playerForm = getFormationArray(document.getElementById('formationSelect').value);
-  const aiForm = getFormationArray('MSMS'); // AI는 균형잡힌 마상마상 또는 랜덤 차림 사용
-
-  // 한(HAN, 상단, 음수) 배치
-  board[0][0] = -CHA; board[0][8] = -CHA;
-  board[0][3] = -SA;  board[0][5] = -SA;
-  board[0][1] = -aiForm[0]; board[0][2] = -aiForm[1];
-  board[0][6] = -aiForm[2]; board[0][7] = -aiForm[3];
-  board[1][4] = -KING;
-  board[2][1] = -PO;  board[2][7] = -PO;
-  for (let c = 0; c < COLS; c += 2) board[3][c] = -JOL;
-
-  // 초(CHO, 하단, 양수) 배치
-  board[9][0] = CHA; board[9][8] = CHA;
-  board[9][3] = SA;  board[9][5] = SA;
-  board[9][1] = playerForm[0]; board[9][2] = playerForm[1];
-  board[9][6] = playerForm[2]; board[9][7] = playerForm[3];
-  board[8][4] = KING;
-  board[7][1] = PO;  board[7][7] = PO;
-  for (let c = 0; c < COLS; c += 2) board[6][c] = JOL;
-
-  turn = CHO;
-  selected = null;
-  validMoves = [];
-  lastMove = null;
-  historyStack = [];
-  isGameOver = false;
-  isAiThinking = false;
-  logBox.innerHTML = '<div>[대국 시작] 초(Player) 선수입니다.</div>';
-  updateUI();
-  draw();
-}
-
-function inBounds(r, c) {
-  return r >= 0 && r < ROWS && c >= 0 && c < COLS;
-}
-
-function getSide(piece) {
-  if (piece > 0) return CHO;
-  if (piece < 0) return HAN;
-  return 0;
+function isHan(p) { return p && p === p.toUpperCase(); }
+function isCho(p) { return p && p === p.toLowerCase(); }
+function isSameTeam(p1, p2) {
+  if (!p1 || !p2) return false;
+  return (isHan(p1) && isHan(p2)) || (isCho(p1) && isCho(p2));
 }
 
 // 궁성 내부 확인
-function inPalace(r, c, side) {
+function inPalace(r, c, team) {
   if (c < 3 || c > 5) return false;
-  if (side === HAN) return r >= 0 && r <= 2;
-  if (side === CHO) return r >= 7 && r <= 9;
-  return (r >= 0 && r <= 2) || (r >= 7 && r <= 9);
+  if (team === 'han') return r >= 0 && r <= 2;
+  return r >= 7 && r <= 9;
 }
 
-// 궁성 대각선 연결 여부
+// 궁성 대각선 이동 가능 좌표 확인
 function getPalaceDiagonals(r, c) {
   const diags = [];
-  // 상단 궁성 (0~2, 3~5)
-  if ((r === 0 && c === 3) || (r === 2 && c === 5) || (r === 0 && c === 5) || (r === 2 && c === 3)) {
+  // 한나라 궁성 (0~2, 3~5)
+  if ((r === 0 && c === 3) || (r === 0 && c === 5) || (r === 2 && c === 3) || (r === 2 && c === 5)) {
     diags.push([1, 4]);
   } else if (r === 1 && c === 4) {
     diags.push([0, 3], [0, 5], [2, 3], [2, 5]);
   }
-  // 하단 궁성 (7~9, 3~5)
-  if ((r === 7 && c === 3) || (r === 9 && c === 5) || (r === 7 && c === 5) || (r === 9 && c === 3)) {
+  // 초나라 궁성 (7~9, 3~5)
+  if ((r === 7 && c === 3) || (r === 7 && c === 5) || (r === 9 && c === 3) || (r === 9 && c === 5)) {
     diags.push([8, 4]);
   } else if (r === 8 && c === 4) {
     diags.push([7, 3], [7, 5], [9, 3], [9, 5]);
@@ -274,72 +230,113 @@ function getPalaceDiagonals(r, c) {
   return diags;
 }
 
-// 특정 위치 기물의 모든 의사 합법수(Pseudo-legal moves) 생성
-function getPseudoMoves(bd, r, c) {
-  const piece = bd[r][c];
-  if (piece === EMPTY) return [];
-  const side = getSide(piece);
-  const type = Math.abs(piece);
+// 게임 초기화 및 포진 배치
+function initGame() {
+  board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  
+  // 한나라 (PC - 상단) 랜덤 고수 포진 선택
+  const hanFormations = ['MSMS', 'SMSM', 'MSSM', 'SMMS'];
+  const hanForm = hanFormations[Math.floor(Math.random() * hanFormations.length)];
+  setupBackRow(0, 'han', hanForm);
+  board[1][4] = 'K';
+  board[2][1] = 'P'; board[2][7] = 'P';
+  board[3][0] = 'S'; board[3][2] = 'S'; board[3][4] = 'S'; board[3][6] = 'S'; board[3][8] = 'S';
+
+  // 초나라 (플레이어 - 하단) 사용자 선택 포진
+  const choForm = document.getElementById('formationSelect').value;
+  setupBackRow(9, 'cho', choForm);
+  board[8][4] = 'k';
+  board[7][1] = 'p'; board[7][7] = 'p';
+  board[6][0] = 's'; board[6][2] = 's'; board[6][4] = 's'; board[6][6] = 's'; board[6][8] = 's';
+
+  turn = 'cho';
+  selected = null;
+  validMoves = [];
+  gameOver = false;
+  isAiThinking = false;
+  lastMove = null;
+
+  document.getElementById('message-log').innerHTML = '';
+  addLog(`[시스템] 새 대국 시작! (초: ${choForm} / 한: ${hanForm})`);
+  addLog(`[안내] 초나라(플레이어) 선공입니다. 기물을 선택하세요.`);
+  updateUI();
+  drawBoard();
+}
+
+function setupBackRow(row, team, form) {
+  const isH = team === 'han';
+  const C = isH ? 'C' : 'c';
+  const A = isH ? 'A' : 'a';
+  const H = isH ? 'H' : 'h';
+  const E = isH ? 'E' : 'e';
+
+  board[row][0] = C; board[row][8] = C;
+  board[row][3] = A; board[row][5] = A;
+
+  const map = { 'M': H, 'S': E };
+  board[row][1] = map[form[0]];
+  board[row][2] = map[form[1]];
+  board[row][6] = map[form[2]];
+  board[row][7] = map[form[3]];
+}
+
+// 특정 기물의 이동 가능한 모든 수 생성 (자충수 제외 전)
+function getPseudoMoves(b, r, c) {
+  const p = b[r][c];
+  if (!p) return [];
   const moves = [];
+  const type = p.toUpperCase();
+  const team = isHan(p) ? 'han' : 'cho';
 
   const addIfValid = (nr, nc) => {
-    if (!inBounds(nr, nc)) return false;
-    const target = bd[nr][nc];
-    if (target === EMPTY) {
-      moves.push({ fr: r, fc: c, tr: nr, tc: nc });
-      return true;
-    } else if (getSide(target) !== side) {
-      moves.push({ fr: r, fc: c, tr: nr, tc: nc });
-      return false;
-    }
-    return false;
+    if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return false;
+    if (isSameTeam(p, b[nr][nc])) return false;
+    moves.push({ fromR: r, fromC: c, toR: nr, toC: nc });
+    return b[nr][nc] === null;
   };
 
-  if (type === KING || type === SA) {
+  if (type === 'C') { // 차
     const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-    for (const [dr, dc] of dirs) {
-      const nr = r + dr, nc = c + dc;
-      if (inPalace(nr, nc, side)) addIfValid(nr, nc);
-    }
-    for (const [nr, nc] of getPalaceDiagonals(r, c)) {
-      if (inPalace(nr, nc, side)) addIfValid(nr, nc);
-    }
-  } 
-  else if (type === CHA) {
-    const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-    for (const [dr, dc] of dirs) {
+    for (let [dr, dc] of dirs) {
       let nr = r + dr, nc = c + dc;
-      while (inBounds(nr, nc)) {
+      while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
         if (!addIfValid(nr, nc)) break;
         nr += dr; nc += dc;
       }
     }
-    // 궁성 대각선 직진 (꼭짓점 -> 중앙 -> 반대 꼭짓점)
-    for (const [mr, mc] of getPalaceDiagonals(r, c)) {
-      if (addIfValid(mr, mc) && mr === 1 || mr === 8) {
-        const nr = mr + (mr - r), nc = mc + (mc - c);
-        if (inPalace(nr, nc, 0)) addIfValid(nr, nc);
+    // 궁성 대각선 직진
+    for (let [dr, dc] of getPalaceDiagonals(r, c)) {
+      if (!isSameTeam(p, b[dr][dc])) {
+        moves.push({ fromR: r, fromC: c, toR: dr, toC: dc });
+        if (b[dr][dc] === null && dr === 1 && dc === 4) {
+          const oppR = 2 - r, oppC = 8 - c;
+          if (!isSameTeam(p, b[oppR][oppC])) moves.push({ fromR: r, fromC: c, toR: oppR, toC: oppC });
+        }
+        if (b[dr][dc] === null && dr === 8 && dc === 4) {
+          const oppR = 16 - r, oppC = 8 - c;
+          if (!isSameTeam(p, b[oppR][oppC])) moves.push({ fromR: r, fromC: c, toR: oppR, toC: oppC });
+        }
       }
     }
   } 
-  else if (type === PO) {
+  else if (type === 'P') { // 포 (포는 포를 넘을 수 없고, 포를 취할 수 없음)
     const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-    for (const [dr, dc] of dirs) {
+    for (let [dr, dc] of dirs) {
       let nr = r + dr, nc = c + dc;
       let jumped = false;
-      while (inBounds(nr, nc)) {
-        const target = bd[nr][nc];
+      while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+        const target = b[nr][nc];
         if (!jumped) {
-          if (target !== EMPTY) {
-            if (Math.abs(target) === PO) break; // 포는 포를 넘을 수 없음
+          if (target !== null) {
+            if (target.toUpperCase() === 'P') break; // 포는 못 넘음
             jumped = true;
           }
         } else {
-          if (target === EMPTY) {
-            moves.push({ fr: r, fc: c, tr: nr, tc: nc });
+          if (target === null) {
+            moves.push({ fromR: r, fromC: c, toR: nr, toC: nc });
           } else {
-            if (getSide(target) !== side && Math.abs(target) !== PO) {
-              moves.push({ fr: r, fc: c, tr: nr, tc: nc });
+            if (!isSameTeam(p, target) && target.toUpperCase() !== 'P') {
+              moves.push({ fromR: r, fromC: c, toR: nr, toC: nc });
             }
             break;
           }
@@ -347,87 +344,89 @@ function getPseudoMoves(bd, r, c) {
         nr += dr; nc += dc;
       }
     }
-    // 궁성 대각선 포 넘기 (꼭짓점에서 중앙 기물을 넘어 반대편 꼭짓점으로)
-    if ((r === 0 || r === 2 || r === 7 || r === 9) && (c === 3 || c === 5)) {
-      const mr = r < 5 ? 1 : 8;
-      const mc = 4;
-      const midPiece = bd[mr][mc];
-      if (midPiece !== EMPTY && Math.abs(midPiece) !== PO) {
-        const tr = mr + (mr - r), tc = mc + (mc - c);
-        const destPiece = bd[tr][tc];
-        if (destPiece === EMPTY || (getSide(destPiece) !== side && Math.abs(destPiece) !== PO)) {
-          moves.push({ fr: r, fc: c, tr, tc });
+    // 궁성 대각선 포 점프 (모서리 -> 중앙 기물 넘기 -> 반대편 모서리)
+    if ((r === 0 || r === 2) && (c === 3 || c === 5) && b[1][4] && b[1][4].toUpperCase() !== 'P') {
+      const oppR = 2 - r, oppC = 8 - c;
+      const target = b[oppR][oppC];
+      if (!isSameTeam(p, target) && (!target || target.toUpperCase() !== 'P')) {
+        moves.push({ fromR: r, fromC: c, toR: oppR, toC: oppC });
+      }
+    }
+    if ((r === 7 || r === 9) && (c === 3 || c === 5) && b[8][4] && b[8][4].toUpperCase() !== 'P') {
+      const oppR = 16 - r, oppC = 8 - c;
+      const target = b[oppR][oppC];
+      if (!isSameTeam(p, target) && (!target || target.toUpperCase() !== 'P')) {
+        moves.push({ fromR: r, fromC: c, toR: oppR, toC: oppC });
+      }
+    }
+  }
+  else if (type === 'H') { // 마
+    const steps = [
+      [-1,0,-2,-1], [-1,0,-2,1], [1,0,2,-1], [1,0,2,1],
+      [0,-1,-1,-2], [0,-1,1,-2], [0,1,-1,2], [0,1,1,2]
+    ];
+    for (let [mr, mc, tr, tc] of steps) {
+      if (r+mr >= 0 && r+mr < ROWS && c+mc >= 0 && c+mc < COLS && b[r+mr][c+mc] === null) {
+        addIfValid(r+tr, c+tc);
+      }
+    }
+  }
+  else if (type === 'E') { // 상
+    const steps = [
+      [-1,0,-2,-1,-3,-2], [-1,0,-2,1,-3,2], [1,0,2,-1,3,-2], [1,0,2,1,3,2],
+      [0,-1,-1,-2,-2,-3], [0,-1,1,-2,2,-3], [0,1,-1,2,-2,3], [0,1,1,2,2,3]
+    ];
+    for (let [m1r, m1c, m2r, m2c, tr, tc] of steps) {
+      if (r+tr >= 0 && r+tr < ROWS && c+tc >= 0 && c+tc < COLS) {
+        if (b[r+m1r][c+m1c] === null && b[r+m2r][c+m2c] === null) {
+          addIfValid(r+tr, c+tc);
         }
       }
     }
-  } 
-  else if (type === MA) {
-    const steps = [
-      [-1, 0, -2, -1], [-1, 0, -2, 1],
-      [1, 0, 2, -1], ,
-      [0, -1, -1, -2], [0, -1, 1, -2],
-      [0, 1, -1, 2],   [0, 1, 1, 2]
-    ];
-    for (const [br, bc, dr, dc] of steps) {
-      if (inBounds(r + br, c + bc) && bd[r + br][c + bc] === EMPTY) {
-        addIfValid(r + dr, c + dc);
-      }
+  }
+  else if (type === 'K' || type === 'A') { // 궁, 사
+    const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+    for (let [dr, dc] of dirs) {
+      if (inPalace(r+dr, c+dc, team)) addIfValid(r+dr, c+dc);
     }
-  } 
-  else if (type === SANG) {
-    const steps = [
-      [-1, 0, -2, -1, -3, -2], [-1, 0, -2, 1, -3, 2],
-      [1, 0, 2, -1, 3, -2], ,
-      [0, -1, -1, -2, -2, -3], [0, -1, 1, -2, 2, -3],
-      [0, 1, -1, 2, -2, 3],   [0, 1, 1, 2, 2, 3]
-    ];
-    for (const [b1r, b1c, b2r, b2c, dr, dc] of steps) {
-      if (inBounds(r + dr, c + dc) &&
-          bd[r + b1r][c + b1c] === EMPTY &&
-          bd[r + b2r][c + b2c] === EMPTY) {
-        addIfValid(r + dr, c + dc);
-      }
+    for (let [dr, dc] of getPalaceDiagonals(r, c)) {
+      if (inPalace(dr, dc, team)) addIfValid(dr, dc);
     }
-  } 
-  else if (type === JOL) {
-    const forward = side === CHO ? -1 : 1;
-    const dirs = [[forward, 0], [0, -1], [0, 1]];
-    for (const [dr, dc] of dirs) {
-      addIfValid(r + dr, c + dc);
-    }
-    // 궁성 내 전진 대각선 이동
-    for (const [nr, nc] of getPalaceDiagonals(r, c)) {
-      if ((side === CHO && nr < r) || (side === HAN && nr > r)) {
-        addIfValid(nr, nc);
+  }
+  else if (type === 'S') { // 졸, 병
+    const forward = team === 'han' ? 1 : -1;
+    addIfValid(r + forward, c);
+    addIfValid(r, c - 1);
+    addIfValid(r, c + 1);
+    for (let [dr, dc] of getPalaceDiagonals(r, c)) {
+      if ((team === 'han' && dr > r) || (team === 'cho' && dr < r)) {
+        addIfValid(dr, dc);
       }
     }
   }
-
   return moves;
 }
 
-// 특정 진영의 왕 위치 찾기
-function findKing(bd, side) {
-  const target = side * KING;
+// 특정 진영의 궁이 장군 상태인지 확인
+function isInCheck(b, team) {
+  const kingChar = team === 'han' ? 'K' : 'k';
+  let kr = -1, kc = -1;
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (bd[r][c] === target) return { r, c };
+      if (b[r][c] === kingChar) { kr = r; kc = c; break; }
     }
   }
-  return null;
-}
+  if (kr === -1) return true; // 궁이 잡힘
 
-// 해당 진영(side)이 현재 장군 상태인지 확인
-function isInCheck(bd, side) {
-  const kingPos = findKing(bd, side);
-  if (!kingPos) return true;
-  const enemy = -side;
+  // 상대방의 모든 기물이 궁 위치로 이동 가능한지 검사
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (getSide(bd[r][c]) === enemy) {
-        const moves = getPseudoMoves(bd, r, c);
-        for (const m of moves) {
-          if (m.tr === kingPos.r && m.tc === kingPos.c) return true;
+      const p = b[r][c];
+      if (!p) continue;
+      if ((team === 'han' && isCho(p)) || (team === 'cho' && isHan(p))) {
+        const enemyMoves = getPseudoMoves(b, r, c);
+        for (let m of enemyMoves) {
+          if (m.toR === kr && m.toC === kc) return true;
         }
       }
     }
@@ -435,478 +434,431 @@ function isInCheck(bd, side) {
   return false;
 }
 
-// 보드 복사 및 착수 시뮬레이션
-function makeMoveOnBoard(bd, m) {
-  const nextBd = bd.map(row => row.slice());
-  nextBd[m.tr][m.tc] = nextBd[m.fr][m.fc];
-  nextBd[m.fr][m.fc] = EMPTY;
-  return nextBd;
-}
-
-// 장군을 피하는 완전한 합법수(Legal moves) 반환
-function getLegalMovesForPiece(bd, r, c) {
-  const side = getSide(bd[r][c]);
-  const pseudo = getPseudoMoves(bd, r, c);
-  return pseudo.filter(m => {
-    const nextBd = makeMoveOnBoard(bd, m);
-    return !isInCheck(nextBd, side);
-  });
-}
-
-function getAllLegalMoves(bd, side) {
-  let allMoves = [];
+// 자충수(장군을 부르거나 못 피하는 수)를 걸러낸 완벽한 합법 수 반환
+function getLegalMoves(b, team) {
+  const legal = [];
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (getSide(bd[r][c]) === side) {
-        allMoves = allMoves.concat(getLegalMovesForPiece(bd, r, c));
+      const p = b[r][c];
+      if (!p) continue;
+      if ((team === 'han' && isHan(p)) || (team === 'cho' && isCho(p))) {
+        const pseudo = getPseudoMoves(b, r, c);
+        for (let m of pseudo) {
+          const captured = b[m.toR][m.toC];
+          b[m.toR][m.toC] = p;
+          b[m.fromR][m.fromC] = null;
+          if (!isInCheck(b, team)) {
+            legal.push(m);
+          }
+          b[m.fromR][m.fromC] = p;
+          b[m.toR][m.toC] = captured;
+        }
       }
     }
   }
-  return allMoves;
+  return legal;
 }
 
-// 위치 보너스 테이블 (전진 배치 및 중앙 장악 장려)
-const POS_BONUS_JOL = [
-  [ 0,  0,  0,  0,  0,  0,  0,  0,  0],
-,
- ,
- ,
-  [ 5, 15, 20, 25, 30, 25, 20, 15,  5],
-  [ 0,  5, 10, 15, 15, 15, 10,  5,  0],
-  [ 0,  0,  5,  0,  5,  0,  5,  0,  0],
-  [ 0,  0,  0,  0,  0,  0,  0,  0,  0],
-  [ 0,  0,  0,  0,  0,  0,  0,  0,  0],
-  [ 0,  0,  0,  0,  0,  0,  0,  0,  0]
-];
-
-// 휴리스틱 국면 평가 함수 (HAN 기준 양수 유리, CHO 기준 음수 유리)
-function evaluateBoard(bd) {
-  let score = 150; // 한(후수) 덤 1.5점 반영
+// 보드 평가 함수 (한나라 PC 관점: 양수일수록 한나라 유리)
+function evaluateBoard(b) {
+  let score = 15; // 한나라 후공 덤(1.5점 = 15)
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      const p = bd[r][c];
-      if (p === EMPTY) continue;
-      const side = getSide(p);
-      const type = Math.abs(p);
-      let val = PIECE_VALUES[type];
+      const p = b[r][c];
+      if (!p) continue;
+      let val = PIECE_VALUES[p];
 
-      // 기물별 위치 가산점
-      if (type === JOL) {
-        const tableR = side === HAN ? (9 - r) : r;
-        val += POS_BONUS_JOL[tableR][c];
-      } else if (type === CHA) {
-        // 차가 상대 진영에 침투하거나 중앙 열에 있을 때 가점
-        if ((side === HAN && r >= 6) || (side === CHO && r <= 3)) val += 35;
-        if (c >= 3 && c <= 5) val += 15;
-      } else if (type === PO) {
-        // 포가 중앙에 위치할 때 가점
-        if (c >= 2 && c <= 6) val += 25;
-      } else if (type === MA || type === SANG) {
-        // 마/상이 외곽보다 중앙으로 진출했을 때 가점
-        if (r >= 2 && r <= 7 && c >= 2 && c <= 6) val += 20;
+      // 위치 가산점 (전략적 요충지 및 전진 보너스)
+      const type = p.toUpperCase();
+      if (type === 'S') {
+        // 졸/병 전진 및 중앙 장악 보너스
+        val += isHan(p) ? (r * 12) : -((9 - r) * 12);
+        if (c >= 3 && c <= 5) val += isHan(p) ? 15 : -15;
+      } else if (type === 'C') {
+        // 차 중앙 줄/적진 침투 보너스
+        if (c >= 2 && c <= 6) val += isHan(p) ? 20 : -20;
+        if (isHan(p) && r >= 7) val += 35;
+        if (isCho(p) && r <= 2) val -= 35;
+      } else if (type === 'H' || type === 'E') {
+        // 마/상 중앙 진출 보너스
+        if (r >= 2 && r <= 7 && c >= 2 && c <= 6) {
+          val += isHan(p) ? 18 : -18;
+        }
       }
-
-      score += (side === HAN) ? val : -val;
+      score += val;
     }
   }
   return score;
 }
 
-// 이동 정렬 (Move Ordering): 기물을 잡는 수(Capture)를 먼저 탐색해 가지치기 효율 극대화
-function orderMoves(bd, moves) {
-  return moves.sort((a, b) => {
-    const capA = bd[a.tr][a.tc] !== EMPTY ? PIECE_VALUES[Math.abs(bd[a.tr][a.tc])] : 0;
-    const capB = bd[b.tr][b.tc] !== EMPTY ? PIECE_VALUES[Math.abs(bd[b.tr][b.tc])] : 0;
+// 알파-베타 가지치기 알고리즘 (깊이 4 탐색 + 기물 잡는 수 우선 정렬)
+function alphaBeta(b, depth, alpha, beta, isMaximizing) {
+  if (depth === 0) {
+    return evaluateBoard(b);
+  }
+
+  const team = isMaximizing ? 'han' : 'cho';
+  const moves = getLegalMoves(b, team);
+
+  if (moves.length === 0) {
+    // 외통수(체크메이트) 또는 빅장 판정
+    if (isInCheck(b, team)) {
+      return isMaximizing ? -90000 - depth * 100 : 90000 + depth * 100;
+    }
+    return 0;
+  }
+
+  // Move Ordering: 상대 기물을 잡는 수를 먼저 탐색하여 가지치기 효율 극대화
+  moves.sort((a, bMove) => {
+    const capA = b[a.toR][a.toC] ? Math.abs(PIECE_VALUES[b[a.toR][a.toC]]) : 0;
+    const capB = b[bMove.toR][bMove.toC] ? Math.abs(PIECE_VALUES[b[bMove.toR][bMove.toC]]) : 0;
     return capB - capA;
   });
-}
 
-// 알파-베타 가지치기 탐색 알고리즘
-function alphaBeta(bd, depth, alpha, beta, maximizingPlayer) {
-  const side = maximizingPlayer ? HAN : CHO;
-  if (depth === 0) {
-    return evaluateBoard(bd);
-  }
-
-  const moves = getAllLegalMoves(bd, side);
-  if (moves.length === 0) {
-    // 외통수(Checkmate) 또는 스테일메이트
-    return maximizingPlayer ? (-90000 - depth * 100) : (90000 + depth * 100);
-  }
-
-  orderMoves(bd, moves);
-
-  if (maximizingPlayer) {
+  if (isMaximizing) {
     let maxEval = -Infinity;
-    for (const m of moves) {
-      const nextBd = makeMoveOnBoard(bd, m);
-      const ev = alphaBeta(nextBd, depth - 1, alpha, beta, false);
-      if (ev > maxEval) maxEval = ev;
-      if (ev > alpha) alpha = ev;
+    for (let m of moves) {
+      const piece = b[m.fromR][m.fromC];
+      const captured = b[m.toR][m.toC];
+      b[m.toR][m.toC] = piece;
+      b[m.fromR][m.fromC] = null;
+
+      const evalScore = alphaBeta(b, depth - 1, alpha, beta, false);
+
+      b[m.fromR][m.fromC] = piece;
+      b[m.toR][m.toC] = captured;
+
+      maxEval = Math.max(maxEval, evalScore);
+      alpha = Math.max(alpha, evalScore);
       if (beta <= alpha) break;
     }
     return maxEval;
   } else {
     let minEval = Infinity;
-    for (const m of moves) {
-      const nextBd = makeMoveOnBoard(bd, m);
-      const ev = alphaBeta(nextBd, depth - 1, alpha, beta, true);
-      if (ev < minEval) minEval = ev;
-      if (ev < beta) beta = ev;
+    for (let m of moves) {
+      const piece = b[m.fromR][m.fromC];
+      const captured = b[m.toR][m.toC];
+      b[m.toR][m.toC] = piece;
+      b[m.fromR][m.fromC] = null;
+
+      const evalScore = alphaBeta(b, depth - 1, alpha, beta, true);
+
+      b[m.fromR][m.fromC] = piece;
+      b[m.toR][m.toC] = captured;
+
+      minEval = Math.min(minEval, evalScore);
+      beta = Math.min(beta, evalScore);
       if (beta <= alpha) break;
     }
     return minEval;
   }
 }
 
-// PC AI 최선의 수 계산 실행
-function runAiTurn() {
-  if (isGameOver || turn !== HAN) return;
+// PC(한나라) 즉시 응수 실행 함수
+function triggerAiMove() {
+  if (gameOver) return;
   isAiThinking = true;
-  statusText.innerHTML = '<span class="highlight-han">한(PC AI)</span> 수읽기 중...';
+  updateUI();
 
-  setTimeout(() => {
-    const depth = parseInt(document.getElementById('aiLevel').value, 10);
-    const moves = getAllLegalMoves(board, HAN);
-
-    if (moves.length === 0) {
-      endGame('초(Player) 승리! 한(PC)이 외통수에 걸렸습니다.');
-      isAiThinking = false;
-      return;
-    }
-
-    orderMoves(board, moves);
-    let bestMove = moves[0];
-    let bestValue = -Infinity;
-    let alpha = -Infinity;
-    let beta = Infinity;
-
-    for (const m of moves) {
-      const nextBd = makeMoveOnBoard(board, m);
-      const val = alphaBeta(nextBd, depth - 1, alpha, beta, false);
-      if (val > bestValue) {
-        bestValue = val;
-        bestMove = m;
+  // 브라우저 렌더링 직후 지연 없이 즉시 계산 수행
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const moves = getLegalMoves(board, 'han');
+      if (moves.length === 0) {
+        endGame('초나라(플레이어) 승리! 한나라가 둘 곳이 없습니다.');
+        return;
       }
-      if (val > alpha) alpha = val;
-    }
 
-    executeMove(bestMove);
-    isAiThinking = false;
-  }, 60);
+      // 탐색 깊이 3~4 (기물 수에 따라 동적 조절하여 속도 및 고수준 보장)
+      let pieceCount = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) if (board[r][c]) pieceCount++;
+      }
+      const searchDepth = pieceCount <= 14 ? 4 : 3;
+
+      moves.sort((a, bMove) => {
+        const capA = board[a.toR][a.toC] ? Math.abs(PIECE_VALUES[board[a.toR][a.toC]]) : 0;
+        const capB = board[bMove.toR][bMove.toC] ? Math.abs(PIECE_VALUES[board[bMove.toR][bMove.toC]]) : 0;
+        return capB - capA;
+      });
+
+      let bestMove = moves[0];
+      let bestScore = -Infinity;
+
+      for (let m of moves) {
+        const piece = board[m.fromR][m.fromC];
+        const captured = board[m.toR][m.toC];
+        board[m.toR][m.toC] = piece;
+        board[m.fromR][m.fromC] = null;
+
+        const score = alphaBeta(board, searchDepth - 1, -Infinity, Infinity, false);
+
+        board[m.fromR][m.fromC] = piece;
+        board[m.toR][m.toC] = captured;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = m;
+        }
+      }
+
+      executeMove(bestMove, 'han');
+      isAiThinking = false;
+    }, 30);
+  });
 }
 
-// 착수 실행 및 턴 전환
-function executeMove(m) {
-  // 무르기용 상태 저장
-  historyStack.push({
-    board: board.map(r => r.slice()),
-    turn,
-    lastMove
-  });
+// 실제 기물 이동 및 상태 업데이트
+function executeMove(move, team) {
+  const piece = board[move.fromR][move.fromC];
+  const captured = board[move.toR][move.toC];
 
-  const movedPiece = board[m.fr][m.fc];
-  const capturedPiece = board[m.tr][m.tc];
-  const sideName = turn === CHO ? '초' : '한';
-  const pieceChar = PIECE_NAMES[turn][Math.abs(movedPiece)];
-  const capText = capturedPiece !== EMPTY ? ` (${PIECE_NAMES[-turn][Math.abs(capturedPiece)]} 취함)` : '';
-
-  board[m.tr][m.tc] = movedPiece;
-  board[m.fr][m.fc] = EMPTY;
-  lastMove = m;
+  board[move.toR][move.toC] = piece;
+  board[move.fromR][move.fromC] = null;
+  lastMove = move;
   selected = null;
   validMoves = [];
 
-  addLog(`${historyStack.length}수: [${sideName}] ${pieceChar} (${m.fr+1},${m.fc+1}) → (${m.tr+1},${m.tc+1})${capText}`);
+  const teamName = team === 'cho' ? '초(나)' : '한(PC)';
+  const pName = PIECE_NAMES[piece];
+  let logText = `[${teamName}] ${pName} (${move.fromR+1},${move.fromC+1}) → (${move.toR+1},${move.toC+1})`;
+  if (captured) {
+    logText += ` [${PIECE_NAMES[captured]} 취함!]`;
+  }
+  addLog(logText);
 
-  turn = -turn;
+  // 다음 턴 전환
+  turn = team === 'cho' ? 'han' : 'cho';
+  drawBoard();
   updateUI();
-  draw();
 
-  // 승패 및 장군 확인
-  const nextMoves = getAllLegalMoves(board, turn);
+  // 상대방 외통수 및 장군 체크
+  const nextMoves = getLegalMoves(board, turn);
+  const inCheck = isInCheck(board, turn);
+
   if (nextMoves.length === 0) {
-    const winner = turn === CHO ? '한(PC AI)' : '초(Player)';
-    endGame(`외통수! ${winner}의 승리입니다.`);
+    if (inCheck) {
+      endGame(team === 'cho' ? '외통수! 초나라(플레이어) 승리!' : '외통수! 한나라(PC) 승리!');
+    } else {
+      endGame('더 이상 둘 곳이 없어 무승부입니다.');
+    }
     return;
   }
 
-  if (turn === HAN && !isGameOver) {
-    runAiTurn();
+  if (inCheck) {
+    document.getElementById('alertDisplay').innerText = '⚡ 장군! (멍군 필요)';
+    addLog(`[경고] ${turn === 'cho' ? '초나라' : '한나라'} 장군입니다!`);
+  } else {
+    document.getElementById('alertDisplay').innerText = '';
+  }
+
+  // 플레이어(초)가 둔 직후 PC(한)가 바로 공격 실행
+  if (turn === 'han' && !gameOver) {
+    triggerAiMove();
   }
 }
 
-function addLog(msg) {
-  const div = document.createElement('div');
-  div.textContent = msg;
-  logBox.appendChild(div);
-  logBox.scrollTop = logBox.scrollHeight;
-}
-
-function endGame(message) {
-  isGameOver = true;
-  statusText.innerHTML = `<strong style="color:#fbbf24;">${message}</strong>`;
-  draw();
-}
-
-function updateUI() {
-  // 기물 점수 계산
-  let choScore = 0;
-  let hanScore = 1.5; // 한 덤 1.5점
-  const simpleVal = { [KING]:0, [CHA]:13, [PO]:7, [MA]:5, [SANG]:3, [SA]:3, [JOL]:2 };
-
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const p = board[r][c];
-      if (p > 0) choScore += simpleVal[p];
-      else if (p < 0) hanScore += simpleVal[-p];
-    }
+// 한수 쉼 버튼 기능
+function passTurn() {
+  if (gameOver || turn !== 'cho' || isAiThinking) return;
+  if (isInCheck(board, 'cho')) {
+    alert('장군 상태에서는 한수 쉴 수 없습니다!');
+    return;
   }
-  scoreText.textContent = `기물 점수 - 초: ${choScore.toFixed(1)} | 한: ${hanScore.toFixed(1)}`;
-
-  if (!isGameOver) {
-    const inCheck = isInCheck(board, turn);
-    const checkBadge = inCheck ? ' <span style="color:#facc15; font-weight:bold;">[장군!]</span>' : '';
-    if (turn === CHO) {
-      statusText.innerHTML = `<span class="highlight-cho">초(Player)</span>의 차례입니다.${checkBadge}`;
-    } else {
-      statusText.innerHTML = `<span class="highlight-han">한(PC AI)</span>의 차례입니다.${checkBadge}`;
-    }
-  }
+  selected = null;
+  validMoves = [];
+  addLog('[초(나)] 한수 쉼을 선택했습니다.');
+  turn = 'han';
+  drawBoard();
+  updateUI();
+  triggerAiMove();
 }
+
+function endGame(msg) {
+  gameOver = true;
+  isAiThinking = false;
+  document.getElementById('alertDisplay').innerText = msg;
+  addLog(`[종료] ${msg}`);
+  updateUI();
+  setTimeout(() => alert(msg), 100);
+}
+
+// 캔버스 클릭 이벤트 (초나라 조작)
+canvas.addEventListener('click', (e) => {
+  if (gameOver || turn !== 'cho' || isAiThinking) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const c = Math.round((x - OFFSET_X) / CELL);
+  const r = Math.round((y - OFFSET_Y) / CELL);
+
+  if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+
+  // 이미 선택된 기물의 이동 가능 위치를 클릭한 경우 -> 즉시 이동 및 PC 응수
+  const targetMove = validMoves.find(m => m.toR === r && m.toC === c);
+  if (targetMove) {
+    executeMove(targetMove, 'cho');
+    return;
+  }
+
+  // 초나라 기물 선택
+  const clickedPiece = board[r][c];
+  if (clickedPiece && isCho(clickedPiece)) {
+    selected = { r, c };
+    const allLegal = getLegalMoves(board, 'cho');
+    validMoves = allLegal.filter(m => m.fromR === r && m.fromC === c);
+    drawBoard();
+  } else {
+    selected = null;
+    validMoves = [];
+    drawBoard();
+  }
+});
 
 // 장기판 및 기물 그리기
-function draw() {
-  ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-
-  // 배경 나무 프레임
-  const bgGrad = ctx.createLinearGradient(0, 0, 920, 960);
-  bgGrad.addColorStop(0, '#c89656');
-  bgGrad.addColorStop(1, '#a67236');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(35, 25, 830, 910);
-
-  ctx.strokeStyle = '#4a2e14';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(35, 25, 830, 910);
+function drawBoard() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // 격자 선 그리기
-  ctx.strokeStyle = '#2b1a0a';
+  ctx.strokeStyle = '#3b2816';
   ctx.lineWidth = 2;
 
   for (let r = 0; r < ROWS; r++) {
-    const y = BOARD_Y + r * CELL_H;
     ctx.beginPath();
-    ctx.moveTo(BOARD_X, y);
-    ctx.lineTo(BOARD_X + (COLS - 1) * CELL_W, y);
+    ctx.moveTo(OFFSET_X, OFFSET_Y + r * CELL);
+    ctx.lineTo(OFFSET_X + (COLS - 1) * CELL, OFFSET_Y + r * CELL);
     ctx.stroke();
   }
   for (let c = 0; c < COLS; c++) {
-    const x = BOARD_X + c * CELL_W;
     ctx.beginPath();
-    ctx.moveTo(x, BOARD_Y);
-    ctx.lineTo(x, BOARD_Y + (ROWS - 1) * CELL_H);
+    ctx.moveTo(OFFSET_X + c * CELL, OFFSET_Y);
+    ctx.lineTo(OFFSET_X + c * CELL, OFFSET_Y + (ROWS - 1) * CELL);
     ctx.stroke();
   }
 
   // 궁성 대각선 그리기
   const drawDiag = (r1, c1, r2, c2) => {
     ctx.beginPath();
-    ctx.moveTo(BOARD_X + c1 * CELL_W, BOARD_Y + r1 * CELL_H);
-    ctx.lineTo(BOARD_X + c2 * CELL_W, BOARD_Y + r2 * CELL_H);
+    ctx.moveTo(OFFSET_X + c1 * CELL, OFFSET_Y + r1 * CELL);
+    ctx.lineTo(OFFSET_X + c2 * CELL, OFFSET_Y + r2 * CELL);
     ctx.stroke();
   };
   drawDiag(0, 3, 2, 5); drawDiag(0, 5, 2, 3);
   drawDiag(7, 3, 9, 5); drawDiag(7, 5, 9, 3);
 
-  // 화점(졸/병/포 위치 표시점) 그리기
-  const dots = [
-    [2,1],[2,7],[3,0],[3,2],[3,4],[3,6],[3,8],
-    [6,0],[6,2],[6,4],[6,6],[6,8],[7,1],[7,7]
-  ];
-  ctx.fillStyle = '#2b1a0a';
-  for (const [dr, dc] of dots) {
+  // 직전 이동 경로 하이라이트
+  if (lastMove) {
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.25)';
+    ctx.fillRect(OFFSET_X + lastMove.fromC * CELL - 30, OFFSET_Y + lastMove.fromR * CELL - 30, 60, 60);
+    ctx.fillStyle = 'rgba(255, 140, 0, 0.35)';
+    ctx.fillRect(OFFSET_X + lastMove.toC * CELL - 30, OFFSET_Y + lastMove.toR * CELL - 30, 60, 60);
+  }
+
+  // 이동 가능 위치 표시
+  for (let m of validMoves) {
+    const vx = OFFSET_X + m.toC * CELL;
+    const vy = OFFSET_Y + m.toR * CELL;
     ctx.beginPath();
-    ctx.arc(BOARD_X + dc * CELL_W, BOARD_Y + dr * CELL_H, 4.5, 0, Math.PI * 2);
+    ctx.arc(vx, vy, board[m.toR][m.toC] ? 32 : 12, 0, Math.PI * 2);
+    ctx.fillStyle = board[m.toR][m.toC] ? 'rgba(220, 40, 40, 0.45)' : 'rgba(30, 160, 70, 0.65)';
     ctx.fill();
   }
 
-  // 직전 이동 경로 하이라이트
-  if (lastMove) {
-    ctx.fillStyle = 'rgba(250, 204, 21, 0.35)';
-    ctx.fillRect(BOARD_X + lastMove.fc * CELL_W - 28, BOARD_Y + lastMove.fr * CELL_H - 28, 56, 56);
-    ctx.fillStyle = 'rgba(250, 204, 21, 0.5)';
-    ctx.fillRect(BOARD_X + lastMove.tc * CELL_W - 32, BOARD_Y + lastMove.tr * CELL_H - 32, 64, 64);
-  }
-
-  // 기물 그리기
+  // 기물 그리기 (팔각형 장기알)
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      const piece = board[r][c];
-      if (piece !== EMPTY) {
-        drawPiece(r, c, piece, selected && selected.r === r && selected.c === c);
-      }
-    }
-  }
-
-  // 선택된 기물의 이동 가능 위치 표시
-  for (const m of validMoves) {
-    const vx = BOARD_X + m.tc * CELL_W;
-    const vy = BOARD_Y + m.tr * CELL_H;
-    ctx.beginPath();
-    if (board[m.tr][m.tc] !== EMPTY) {
-      // 상대 기물을 잡을 수 있는 위치
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 4;
-      ctx.arc(vx, vy, 38, 0, Math.PI * 2);
-      ctx.stroke();
-    } else {
-      // 빈 칸 이동 위치
-      ctx.fillStyle = 'rgba(34, 197, 94, 0.75)';
-      ctx.arc(vx, vy, 12, 0, Math.PI * 2);
-      ctx.fill();
+      const p = board[r][c];
+      if (!p) continue;
+      drawPiece(r, c, p);
     }
   }
 }
 
-// 팔각형 입체 장기알 렌더링
-function drawPiece(r, c, piece, isSelected) {
-  const x = BOARD_X + c * CELL_W;
-  const y = BOARD_Y + r * CELL_H;
-  const side = getSide(piece);
-  const type = Math.abs(piece);
+function drawPiece(r, c, p) {
+  const x = OFFSET_X + c * CELL;
+  const y = OFFSET_Y + r * CELL;
+  const type = p.toUpperCase();
+  const radius = type === 'K' ? 33 : (['C','P','H','E'].includes(type) ? 28 : 23);
 
-  // 기물 크기를 3단계로 차등화 (궁 > 차/포/마/상 > 사/졸)
-  let radius = 33;
-  if (type === KING) radius = 40;
-  else if (type === SA || type === JOL) radius = 28;
-
-  ctx.save();
-  ctx.translate(x, y);
-
-  if (isSelected) {
-    ctx.shadowColor = '#38bdf8';
-    ctx.shadowBlur = 20;
-    ctx.scale(1.08, 1.08);
-  } else {
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetY = 4;
+  // 선택된 기물 테두리 강조
+  if (selected && selected.r === r && selected.c === c) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 6, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(50, 220, 100, 0.6)';
+    ctx.fill();
   }
 
-  // 팔각형 경로 생성
-  const drawOctagon = (rad) => {
-    ctx.beginPath();
-    for (let i = 0; i < 8; i++) {
-      const angle = (Math.PI / 4) * i + (Math.PI / 8);
-      const px = Math.cos(angle) * rad;
-      const py = Math.sin(angle) * rad;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-  };
+  // 팔각형 외곽선
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const angle = (Math.PI / 4) * i + Math.PI / 8;
+    const px = x + radius * Math.cos(angle);
+    const py = y + radius * Math.sin(angle);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
 
-  // 기물 몸체 (상아/나무 톤)
-  drawOctagon(radius);
-  const pGrad = ctx.createRadialGradient(-6, -6, 4, 0, 0, radius);
-  pGrad.addColorStop(0, '#fffdf7');
-  pGrad.addColorStop(1, '#e6d3b3');
-  ctx.fillStyle = pGrad;
+  ctx.fillStyle = '#fdf5e6';
   ctx.fill();
-
-  ctx.lineWidth = 2.5;
-  ctx.strokeStyle = side === CHO ? '#1d4ed8' : '#b91c1c';
-  ctx.stroke();
-
-  // 내부 테두리
-  ctx.shadowColor = 'transparent';
-  drawOctagon(radius - 5);
-  ctx.lineWidth = 1.2;
-  ctx.strokeStyle = side === CHO ? 'rgba(29, 78, 216, 0.4)' : 'rgba(185, 28, 28, 0.4)';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = isHan(p) ? '#b82525' : '#186a3b';
   ctx.stroke();
 
   // 한자 텍스트
-  ctx.fillStyle = side === CHO ? '#0f3d91' : '#b91c1c';
-  ctx.font = `bold ${Math.floor(radius * 1.15)}px "Batang", "Malgun Gothic", serif`;
+  ctx.fillStyle = isHan(p) ? '#b82525' : '#186a3b';
+  ctx.font = `bold ${radius * 1.15}px "Batang", "Malgun Gothic", serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(PIECE_NAMES[side][type], 0, 2);
-
-  ctx.restore();
+  ctx.fillText(PIECE_NAMES[p], x, y + 2);
 }
 
-// 캔버스 클릭 이벤트 처리 (해상도 스케일 보정 포함)
-canvas.addEventListener('click', (e) => {
-  if (isGameOver || isAiThinking || turn !== CHO) return;
+// UI 및 점수판 업데이트
+function updateUI() {
+  const turnDiv = document.getElementById('turnDisplay');
+  const passBtn = document.getElementById('passBtn');
 
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = CANVAS_W / rect.width;
-  const scaleY = CANVAS_H / rect.height;
-
-  const clickX = (e.clientX - rect.left) * scaleX;
-  const clickY = (e.clientY - rect.top) * scaleY;
-
-  const c = Math.round((clickX - BOARD_X) / CELL_W);
-  const r = Math.round((clickY - BOARD_Y) / CELL_H);
-
-  if (!inBounds(r, c)) return;
-
-  // 1. 이동 가능한 칸을 클릭한 경우 착수 실행
-  const chosenMove = validMoves.find(m => m.tr === r && m.tc === c);
-  if (chosenMove) {
-    executeMove(chosenMove);
-    return;
-  }
-
-  // 2. 자신의 기물을 선택한 경우 합법수 표시
-  if (getSide(board[r][c]) === CHO) {
-    selected = { r, c };
-    validMoves = getLegalMovesForPiece(board, r, c);
-    draw();
+  if (gameOver) {
+    turnDiv.innerText = '대국 종료';
+    turnDiv.className = 'turn-indicator';
+    passBtn.disabled = true;
+  } else if (turn === 'cho') {
+    turnDiv.innerText = '초나라(플레이어) 차례';
+    turnDiv.className = 'turn-indicator turn-cho';
+    passBtn.disabled = false;
   } else {
-    selected = null;
-    validMoves = [];
-    draw();
+    turnDiv.innerText = '한나라(PC) 응수 중...';
+    turnDiv.className = 'turn-indicator turn-han';
+    passBtn.disabled = true;
   }
-});
 
-// 버튼 이벤트 연결
-document.getElementById('btnNewGame').addEventListener('click', initBoard);
-
-document.getElementById('btnUndo').addEventListener('click', () => {
-  if (isAiThinking || historyStack.length < 2) return;
-  // AI의 수와 플레이어의 수 2수를 한꺼번에 되돌림
-  historyStack.pop();
-  const prevState = historyStack.pop();
-  board = prevState.board;
-  turn = prevState.turn;
-  lastMove = prevState.lastMove;
-  selected = null;
-  validMoves = [];
-  isGameOver = false;
-  addLog('[무르기] 한 수 이전으로 되돌렸습니다.');
-  updateUI();
-  draw();
-});
-
-document.getElementById('btnPass').addEventListener('click', () => {
-  if (isGameOver || isAiThinking || turn !== CHO) return;
-  if (isInCheck(board, CHO)) {
-    alert('장군 상태에서는 한 수 쉼을 할 수 없습니다.');
-    return;
+  // 기물 점수 계산
+  const scoreMap = { 'C': 13, 'P': 7, 'H': 5, 'E': 3, 'A': 3, 'S': 2 };
+  let choPts = 0, hanPts = 1.5; // 한나라 후공 덤 1.5점
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const p = board[r][c];
+      if (!p || p.toUpperCase() === 'K') continue;
+      if (isCho(p)) choPts += scoreMap[p.toUpperCase()];
+      else hanPts += scoreMap[p.toUpperCase()];
+    }
   }
-  addLog('[초] 한 수 쉼');
-  turn = HAN;
-  selected = null;
-  validMoves = [];
-  updateUI();
-  draw();
-  runAiTurn();
-});
+  document.getElementById('choScore').innerText = choPts;
+  document.getElementById('hanScore').innerText = hanPts;
+}
 
-      // 게임 최초 시작
-      initBoard();
-    </script>
-  </body>
+function addLog(msg) {
+  const logBox = document.getElementById('message-log');
+  const div = document.createElement('div');
+  div.innerText = msg;
+  logBox.appendChild(div);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+// 초기 실행
+initGame();
+</script>
+</body>
 </html>
