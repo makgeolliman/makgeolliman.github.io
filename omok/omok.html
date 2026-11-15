@@ -47,20 +47,34 @@
 </head>
 <body>
 
-    <div id="status">당신의 차례입니다. (흑돌)</div>
+    <div id="status">It is Black Stone's turn.</div>
     <canvas id="board" width="600" height="600"></canvas>
     <div class="controls">
-      <button onclick="resetGame()">새 게임 시작</button>
+      <button onclick="resetGame()">Restart</button>
     </div>
 
     <script>
+        (function() {
+          // 모바일 기기 판별 (UserAgent 및 화면 너비 기준)
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                           || window.matchMedia("(max-width: 768px)").matches;
+
+          if (isMobile) {
+            const viewport = document.getElementById('viewport-meta');
+            // 모바일인 경우 초기 배율(initial-scale)을 1.3(30% 확대)으로 변경
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.3');
+          }
+        })();
+
+
+
         const canvas = document.getElementById('board');
         const ctx = canvas.getContext('2d');
         const statusDiv = document.getElementById('status');
 
-        const SIZE = 15; // 15x15 바둑판
-        const CELL = 40; // 한 칸의 크기
-        const PADDING = 20; // 테두리 여백
+        const SIZE = 15;       // 15x15 바둑판
+        const CELL = 40;       // 한 칸의 크기
+        const PADDING = 20;    // 테두리 여백
 
         let boardState = [];
         let isPlayerTurn = true;
@@ -76,7 +90,7 @@
         function init() {
             gameOver = false;
             lastMove = null;
-            statusDiv.innerText = "당신의 차례입니다. (흑돌)";
+            statusDiv.innerText = "It is Black Stone's turn.";
             drawBoard();
         }
 
@@ -183,8 +197,8 @@
                 placeStone(r, c, 1);
                 if (!gameOver) {
                     isPlayerTurn = false;
-                    statusDiv.innerText = "PC가 생각 중입니다...";
-                    setTimeout(aiMove, 200); // PC가 자연스럽게 두도록 약간의 지연
+                    statusDiv.innerText = "PC thinking...";
+                    setTimeout(aiMove, 200);    // PC가 자연스럽게 두도록 약간의 지연
                 }
             }
         });
@@ -197,7 +211,7 @@
 
             if (checkWin(r, c, player)) {
                 gameOver = true;
-                statusDiv.innerText = player === 1 ? "축하합니다! 당신이 승리했습니다!" : "PC가 승리했습니다!";
+                statusDiv.innerText = player === 1 ? "congratulations! you win!" : "PC win!";
                 return;
             }
         }
@@ -251,7 +265,7 @@
 
             if (!gameOver) {
                 isPlayerTurn = true;
-                statusDiv.innerText = "당신의 차례입니다. (흑돌)";
+                statusDiv.innerText = "It is Black Stone's turn.";
             }
         }
 
