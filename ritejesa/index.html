@@ -252,6 +252,19 @@
             transition: clip-path 0.1s linear; /* 타들어가는 애니메이션 효과용 */
         }
 
+
+        .visitor-counter {
+          position: fixed;       /* 화면 스크롤과 무관하게 위치 고정 */
+          bottom: 20px;          /* 아래쪽 여백 */
+          left: 20px;            /* 왼쪽 여백 */
+          z-index: 9999;         /* 다른 요소들보다 위에 표시 */
+          background-color: rgba(0, 0, 0, 0.7); /* 반투명 검은 배경 */
+          color: #ffffff;        /* 색 글씨 */
+          padding: 6px 12px;     /* 내부 여백 */
+          border-radius: 6px;    /* 모서리 둥글게 */
+          font-size: 13px;       /* 글자 크기 */
+        }
+
     </style>
 </head>
 <body>
@@ -287,6 +300,29 @@
         <!-- 지방 태우는 신호주는 버튼 -->
         <span id="incense-btn" class="incense-button"></span>
     </div>
+
+
+<!-- 전체 방문자 수(UV):html
+<span id="busuanzi_container_site_uv" style="display:none">
+  방문자 수: <span id="busuanzi_value_site_uv"></span>명
+</span>
+-->
+
+<!-- 전체 방문 수(PV):html
+<span id="busuanzi_container_site_pv" style="display:none">
+  총 방문 수: <span id="busuanzi_value_site_pv"></span>회
+</span>
+-->
+
+    <span id="busuanzi_container_page_pv" class="visitor-counter" style="display:none;">
+
+      <span id="busuanzi_value_page_pv"></span>
+
+    </span>
+
+
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
 
 
 
