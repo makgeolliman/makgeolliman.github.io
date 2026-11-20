@@ -124,6 +124,18 @@
   }
   button:hover { background: #e09f45; }
   button:disabled { background: #555; color: #888; cursor: not-allowed; }
+
+        .visitor-counter {
+          position: fixed;       /* 화면 스크롤과 무관하게 위치 고정 */
+          bottom: 20px;          /* 아래쪽 여백 */
+          left: 20px;            /* 왼쪽 여백 */
+          z-index: 9999;         /* 다른 요소들보다 위에 표시 */
+          background-color: rgba(0, 0, 0, 0.7); /* 반투명 검은 배경 */
+          color: #ffffff;        /* 색 글씨 */
+          padding: 6px 12px;     /* 내부 여백 */
+          border-radius: 6px;    /* 모서리 둥글게 */
+          font-size: 13px;       /* 글자 크기 */
+        }
 </style>
 </head>
 <body>
@@ -165,6 +177,12 @@
     </div>
   </div>
 </div>
+
+    <span id="busuanzi_container_page_pv" class="visitor-counter" style="display:none;">
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 <script>
 
